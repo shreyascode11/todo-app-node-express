@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do List App</title>
+  <style>
+    /* --- CSS Variables ---
+      We define all our colors here. This lets us easily
+      change them all at once for the dark theme.
+    */
+    :root {
+      --bg-color: #f4f4f4;
+      --app-bg-color: #fff;
+      --text-color: #333;
+      --border-color: #eee;
+      --input-bg-color: #f9f9f9;
+      --input-border-color: #ddd;
+      --btn-primary-bg: #007bff;
+      --btn-primary-text: #ffffff;
+      --btn-primary-hover: #0056b3;
+      --btn-danger-bg: #dc3545;
+      --btn-danger-text: #ffffff;
+      --btn-danger-hover: #c82333;
+      --shadow-color: rgba(0,0,0,0.1);
+      --switch-bg: #ccc;
+      --switch-slider: white;
+    }
+
+    body.dark-theme {
+      --bg-color: #121212;
+      --app-bg-color: #1e1e1e;
+      --text-color: #f1f1f1;
+      --border-color: #333;
+      --input-bg-color: #2a2a2a;
+      --input-border-color: #444;
+      --btn-primary-bg: #007bff;
+      --btn-primary-text: #ffffff;
+      --btn-primary-hover: #0056b3;
+      --btn-danger-bg: #dc3545;
+      --btn-danger-text: #ffffff;
+      --btn-danger-hover: #c82333;
+      --shadow-color: rgba(255,255,255,0.1);
+      --switch-bg: #555;
+      --switch-slider: #007bff;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    #app-container {
+      max-width: 600px;
+      margin: 20px auto;
+      background-color: var(--app-bg-color);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px var(--shadow-color);
+      transition: background-color 0.3s, box-shadow 0.3s;
+    }
+
+    /* --- New Header & Theme Switch --- */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .theme-switch-container {
+      display: flex;
+      align-items: center;
+    }
+    
+    .theme-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 28px;
+    }
+
+    .theme-switch input { 
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--switch-bg);
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--btn-primary-bg);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(22px);
+    }
+    /* --- End Theme Switch --- */
+    
+    .input-container {
+      display: flex;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      flex-grow: 1;
+      padding: 12px;
+      border: 1px solid var(--input-border-color);
+      background-color: var(--input-bg-color);
+      color: var(--text-color);
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s, background-color 0.3s;
+    }
+    
+    input[type="text"]::placeholder {
+      color: var(--text-color);
+      opacity: 0.6;
+    }
+
+    button {
+      padding: 12px 18px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-left: 10px;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    #add-task-btn {
+      background-color: var(--btn-primary-bg);
+      color: var(--btn-primary-text);
+    }
+
+    #add-task-btn:hover {
+      background-color: var(--btn-primary-hover);
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      padding: 14px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 17px;
+      transition: background-color 0.2s;
+    }
+    
+    li:hover {
+      background-color: var(--input-bg-color);
+    }
+
+    li:last-child {
+      border-bottom: none;
+    }
+    
+    li span {
+      word-break: break-word;
+      padding-right: 15px;
+    }
+
+    .delete-btn {
+      background-color: var(--btn-danger-bg);
+      color: var(--btn-danger-text);
+      border: none;
+      padding: 6px 12px;
+      font-size: 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      flex-shrink: 0; /* Prevents button from shrinking */
+    }
+
+    .delete-btn:hover {
+      background-color: var(--btn-danger-hover);
+    }
+    
+    /* Simple toast notification for errors */
+    #toast {
+      visibility: hidden;
+      min-width: 250px;
+      background-color: #dc3545;
+      color: #fff;
+      text-align: center;
+      border-radius: 8px;
+      padding: 16px;
+      position: fixed;
+      z-index: 1;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 30px;
+      font-size: 17px;
+    }
+
+    #toast.show {
+      visibility: visible;
+      -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+
+    @-webkit-keyframes fadein {
+      from {bottom: 0; opacity: 0;} 
+      to {bottom: 30px; opacity: 1;}
+    }
+
+    @keyframes fadein {
+      from {bottom: 0; opacity: 0;}
+      to {bottom: 30px; opacity: 1;}
+    }
+
+    @-webkit-keyframes fadeout {
+      from {bottom: 30px; opacity: 1;} 
+      to {bottom: 0; opacity: 0;}
+    }
+
+    @keyframes fadeout {
+      from {bottom: 30px; opacity: 1;}
+      to {bottom: 0; opacity: 0;}
+    }
+
+  </style>
+</head>
+<body>
+
+  <div id="app-container">
+    <div class="header">
+      <h1>My To-Do List</h1>
+      <div class="theme-switch-container">
+        <label class="theme-switch" for="theme-toggle">
+          <input type="checkbox" id="theme-toggle" />
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="input-container">
+      <input type="text" id="task-input" placeholder="What needs to be done?">
+      <button id="add-task-btn">Add Task</button>
+    </div>
+    
+    <ul id="task-list">
+      <!-- Tasks will be added here by JavaScript -->
+    </ul>
+  </div>
+
+  <!-- Toast Notification HTML -->
+  <div id="toast">Please enter a task!</div>
+
+  <script>
+    // --- 1. Get references to our HTML elements ---
+    const taskInput = document.getElementById('task-input');
+    const addTaskBtn = document.getElementById('add-task-btn');
+    const taskList = document.getElementById('task-list');
+    const themeToggle = document.getElementById('theme-toggle');
+
+    // --- 2. Add Event Listeners ---
+    
+    // Run fetchTasks when the page first loads
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check for saved theme in localStorage
+      if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-theme');
+        themeToggle.checked = true;
+      }
+      fetchTasks();
+    });
+    
+    // Run addNewTask when the button is clicked
+    addTaskBtn.addEventListener('click', addNewTask);
+    
+    // Listen for Enter key in the input
+    taskInput.addEventListener('keypress', function(event) {
+      if (event.key === 'Enter') {
+        addNewTask();
+      }
+    });
+
+    // --- New Theme Toggle Listener ---
+    themeToggle.addEventListener('change', () => {
+      if (themeToggle.checked) {
+        document.body.classList.add('dark-theme');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.body.classList.remove('dark-theme');
+        localStorage.setItem('theme', 'light');
+      }
+    });
+
+    // --- 3. Main Functions ---
+
+    /**
+     * Fetches all tasks from the server and displays them.
+     */
+    async function fetchTasks() {
+      try {
+        const response = await fetch('http://localhost:3000/api/tasks');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const tasks = await response.json();
+
+        // Clear the list before adding new items
+        taskList.innerHTML = '';
+
+        // Loop through each task and create an <li> for it
+        tasks.forEach(task => {
+          const li = document.createElement('li');
+          
+          const taskTextSpan = document.createElement('span');
+          taskTextSpan.textContent = task.text;
+          
+          const deleteBtn = document.createElement('button');
+          deleteBtn.textContent = 'Delete';
+          deleteBtn.className = 'delete-btn';
+          
+          deleteBtn.addEventListener('click', () => {
+            deleteTask(task.id);
+          });
+
+          li.appendChild(taskTextSpan);
+          li.appendChild(deleteBtn);
+          
+          taskList.appendChild(li);
+        });
+
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    }
+
+    /**
+     * Sends a new task to the server.
+     */
+    async function addNewTask() {
+      const taskText = taskInput.value.trim(); // Use .trim() to remove whitespace
+      if (!taskText) {
+        // --- Use new toast notification instead of alert() ---
+        showToast('Please enter a task!');
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:3000/api/tasks', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: taskText }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        taskInput.value = '';
+        fetchTasks();
+
+      } catch (error) {
+        console.error('Error adding new task:', error);
+      }
+    }
+
+    /**
+     * Deletes a task.
+     */
+    async function deleteTask(taskId) {
+      // Use the built-in confirm popup
+      if (!confirm('Are you sure you want to delete this task?')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`http://localhost:3000/api/tasks/${taskId}`, {
+          method: 'DELETE',
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        fetchTasks();
+
+      } catch (error) {
+        console.error('Error deleting task:', error);
+      }
+    }
+    
+    /**
+     * --- New Function: Shows a toast notification ---
+     */
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.className = "show";
+      setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+    }
+
+  </script>
+</body>
+</html>
+
